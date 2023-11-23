@@ -13,13 +13,9 @@ public class Caixote extends GameElement{
 		return "Caixote";
 	}
 
-
-
 	@Override
 	public int getLayer() {
 		return 2;
 	}
-
-
 
 }

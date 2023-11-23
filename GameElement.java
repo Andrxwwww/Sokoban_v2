@@ -24,7 +24,7 @@ public abstract class GameElement implements ImageTile {
             case 'C':
                 return new Caixote(position);
             case 'P':
-                return new Palete(position);
+                return new Palete(position,false);
             case 'E':
                 return new Empilhadora(position);
             case 'T':
@@ -34,7 +34,7 @@ public abstract class GameElement implements ImageTile {
             case '=':
                 return new Vazio(position);
             case '%':
-                return new ParedeRachada(position); // mais tarde ira ser posto a false quando se implementar o martelo
+                return new ParedeRachada(position);
             case 'B':
                 return new Bateria(position);
             case 'M':
@@ -64,4 +64,5 @@ public abstract class GameElement implements ImageTile {
 		Direction direction = Direction.directionFor(key);
 		return position.plus(direction.asVector());
 	}
+    
 }

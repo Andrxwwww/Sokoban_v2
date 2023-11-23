@@ -12,13 +12,9 @@ public class Buraco extends GameElement {
         return "Buraco";
     }
 
-
     @Override
     public int getLayer() {
         return 1;
     }
 
-
-
-    
 }

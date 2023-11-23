@@ -48,7 +48,7 @@ public class GameEngine implements Observer {
 	private int moves; // Numero de movimentos da empilhadora
 
 	private final int BATTERY_RELOAD = 50;
-	private final int FIRST_LEVEL = 0;
+	private final int FIRST_LEVEL = 6;
 
 	// Construtor - neste exemplo apenas inicializa uma lista de ImageTiles
 	private GameEngine() {
@@ -60,6 +60,14 @@ public class GameEngine implements Observer {
 		if (INSTANCE == null)
 			return INSTANCE = new GameEngine();
 		return INSTANCE;
+	}
+
+	public ImageMatrixGUI getGui() {
+		return this.gui;
+	}
+	
+	public List<GameElement> getGameElementsList() {
+		return this.gameElementsList;
 	}
 
 	// Inicio
@@ -91,7 +99,7 @@ public class GameEngine implements Observer {
 	public void update(Observed source) {
 		int key = gui.keyPressed(); // obtem o codigo da tecla pressionada
 
-		otherKeyInteractions(key);
+		otherKeyInteractions(key); 
 		if (bobcat != null && Direction.isDirection(key)) {
 			bobcatKeyMechanics(key);
 			pickUpBattery();
@@ -129,7 +137,7 @@ public class GameEngine implements Observer {
 
 	public void restartGame(int level_num) {
 		gui.clearImages(); // apaga todas as imagens atuais da GUI
-		gameElementsList.clear(); // apaga o conteudo das lista
+		gameElementsList.clear(); // apaga todos os elementos da lista de elementos
 		numberOfTargetsWithBoxes = 0;
 		numberOfTargets = 0	;
 		moves = 0;
@@ -202,45 +210,70 @@ public class GameEngine implements Observer {
 		for (GameElement ge : gameElementsList) {
 			if (bobcat.nextPosition(gui.keyPressed()).equals(ge.getPosition())) {
 				if (ge instanceof Caixote || ge instanceof Palete) {
-					
-					if (collidableCollisionChecker(ge.getPosition())) {
-						if (isCaixoteOnAlvo()){
+
+					// verifica se o caixote ou a palete podem mover
+					if (collidableCollisionChecker(ge)) {
+
+						//TODO: no caso de ser uma palete, verificar se ela fica em cima de um buraco
+
+						// verifica se esse caixote está num alvo
+						if (isMovableOnTarget("Alvo", "Caixote")){
 							numberOfTargetsWithBoxes++;
 						} else if (numberOfTargetsWithBoxes > 0 && numberOfTargetsWithBoxes <= numberOfTargets 
-							&& collidableCollisionChecker(ge.getPosition()) && isSomethingAbove(ge.getPosition(), "Alvo")){
+							&& collidableCollisionChecker(ge) && isSomethingAbove(ge.getPosition(), "Alvo")){ // se o caixote sair do alvo
 							numberOfTargetsWithBoxes--;
 						}
+
 						ge.setPosition(ge.getPosition().plus(Direction.directionFor(gui.keyPressed()).asVector()));;
 						bobcat.addBattery(-1);
 						return true;
 					} else {
 						return false; // se o caixote ou a palete nao mover entao , a empilhadora nao se move tambem
 					}
-
+				} else if (ge instanceof Buraco){
+					infoBox("Press SPACE for restart", "You Lost :(");
+					restartGame(FIRST_LEVEL);
+					break;
 				} else if (ge instanceof Parede || ge instanceof ParedeRachada) {
+					//TODO: ramificar este if para verificar se a empilhadora tem martelo ou nao
 					return false;                    
-				} 
-			}
-		}
-		return true;
-	}
-
-	private boolean collidableCollisionChecker (Point2D point) {
-		for (GameElement next_ge : gameElementsList){
-			if (next_ge instanceof Caixote || next_ge instanceof Palete || next_ge instanceof ParedeRachada || next_ge instanceof Parede) {
-				if (point.plus(Direction.directionFor(gui.keyPressed()).asVector()).equals(next_ge.getPosition())) {
-					return false;
 				}
 			}
 		}
 		return true;
 	}
 
-	public boolean isCaixoteOnAlvo() {
+	// funcao que verifica se um caixote ou uma palete pode mover
+	private boolean collidableCollisionChecker (GameElement ge) {
+		for (GameElement next_ge : gameElementsList){
+			if (next_ge instanceof Caixote || next_ge instanceof Palete 
+			|| next_ge instanceof ParedeRachada || next_ge instanceof Parede ) {
+				if (ge.getPosition().plus(Direction.directionFor(gui.keyPressed()).asVector()).equals(next_ge.getPosition())) {
+					return false;
+				}
+			} else if (next_ge instanceof Buraco && ge instanceof Caixote) {
+				if (ge.getPosition().plus(Direction.directionFor(gui.keyPressed()).asVector()).equals(next_ge.getPosition())) {
+					gui.removeImage(ge);
+					gameElementsList.remove(ge);
+					return true;
+				}
+			} else if (next_ge instanceof Buraco && ge instanceof Palete) {
+				if (ge.getPosition().plus(Direction.directionFor(gui.keyPressed()).asVector()).equals(next_ge.getPosition())) {
+					Palete palete = (Palete) ge;
+					palete.setCanMove(true);
+				}
+			}
+		}
+		return true;
+	}
+
+	// funcao que verifica se um caixote ou uma palete está em cima de um alvo
+	public boolean isMovableOnTarget(String target, String movable) {
 		for (GameElement ge1 : gameElementsList) {
-			if (ge1 instanceof Alvo) {
+			if (ge1.getName().equals(target)) {
 				for (GameElement ge2 : gameElementsList) {
-					if (ge2 instanceof Caixote && ge1.getPosition().equals(ge2.nextPosition(gui.keyPressed())) && bobcat.nextPosition(gui.keyPressed()).equals(ge2.getPosition())) {
+					if (ge2.getName().equals(movable) && ge1.getPosition().equals(ge2.nextPosition(gui.keyPressed())) 
+					&& bobcat.nextPosition(gui.keyPressed()).equals(ge2.getPosition())) {
 						return true;
 					}
 				}
@@ -249,6 +282,7 @@ public class GameEngine implements Observer {
 		return false;
 	}
 
+	//Funcao que verifica se existe algo acima de um ponto [usado: para verificar se existe um alvo debaixo de um caixote]
 	public boolean isSomethingAbove(Point2D point , String name){
 		for (GameElement ge : gameElementsList) {
 			if (ge.getPosition().equals(point) && ge.getName().equals(name)) {

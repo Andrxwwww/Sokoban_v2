@@ -8,7 +8,6 @@ public class Bateria extends GameElement{
         super(position);
     }
 
-
     @Override
     public String getName() {
         return "Bateria";
@@ -18,7 +17,5 @@ public class Bateria extends GameElement{
     public int getLayer() {
         return 1;
     }
-
-
 
 }

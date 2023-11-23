@@ -12,8 +12,6 @@ public class Chao extends GameElement {
         return "Chao";
     }
 
-  
-
     @Override
     public int getLayer() {
         return 0;

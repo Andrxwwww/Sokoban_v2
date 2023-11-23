@@ -17,10 +17,5 @@ public class Martelo extends GameElement {
     public int getLayer() {
         return 1;
     }
-
-
-
-
-
     
 }
