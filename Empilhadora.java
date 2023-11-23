@@ -38,8 +38,7 @@ public class Empilhadora extends GameElement{
 		return Battery;
 	}
 
-	//S1
-	// Move e muda a imagem segundo a direcao dada, se estiver dentro dos limites
+	// Muda a imagem segundo a direcao dada 
 	public void move(int key) {
 		Direction direction = Direction.directionFor(key);
 		switch (direction) {
@@ -62,13 +61,14 @@ public class Empilhadora extends GameElement{
 		}
 	}
 	
+	// Move a empilhadora para a direcao dada, se estiver dentro dos limites
 	public void driveTo(Direction direction) {
 		Point2D newPosition = getPosition().plus(direction.asVector());
 		if (newPosition.getX()>=0 && newPosition.getX()<10 && newPosition.getY()>=0 && newPosition.getY()<10 ){
 			setPosition(newPosition);
 			Battery--;
 			if( Battery == 0 ) {
-				GameEngine.getInstance().infoBox("You ran out of battery :(", "Click SPACE for restart");
+				GameEngine.getInstance().infoBox("Click SPACE for restart ", "You ran out of battery :(");
 				GameEngine.getInstance().restartGame(FIRST_LEVEL);
 			}
 		}
